@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">implementation</string>
-    <string name="connect">Connect</string>
+    <string name="connect">Start</string>
+    <string name="disconnect">Stop</string>
+    <string name="ready">Ready</string>
+    <string name="searching">Searching…</string>
     <string name="test">test</string>
     <string name="freq400">Frequency 400 Found</string>
     <string name="freq600">Frequency 600 Found</string>

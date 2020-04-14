@@ -39,7 +39,8 @@ class MainActivity : AppCompatActivity() {
 
         val test = findViewById<TextView>(R.id.hello)
         test.text = getString(R.string.hello)
-        val button = findViewById<Button>(R.id.connect)
+        val startButton = findViewById<Button>(R.id.connect)
+        val stopButton = findViewById<Button>(R.id.disconnect)
 
         val freq = 80
         val rate = 44100
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         val noise = Noise.real(samples)
 
         var active = false
-        button.setOnClickListener {
+        startButton.setOnClickListener {
             doAsync {
                 if (!active) {
                     val s = Solver()
