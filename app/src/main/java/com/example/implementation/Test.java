@@ -15,6 +15,6 @@ public class Test {
             src[i] = (float)Math.cos(2 * Math.PI * i * freq / rate);
         }
 
-        System.out.println(s.solve(samples, rate, src, dst));
+        //System.out.println(s.solve(samples, rate, src, dst));
     }
 }

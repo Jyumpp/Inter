@@ -3,8 +3,13 @@ package com.example.implementation
 import com.paramsen.noise.Noise
 
 class Solver {
-    fun solve(samples: Int, rate: Float, src: FloatArray, dst: FloatArray): Float {
+    fun indexToFreq(rate: Int, samples: Int, index: Int): Float {
+        return rate * (index + 1) / samples.toFloat()
+    }
+
+    fun solve(samples: Int, rate: Int, src: FloatArray): Float {
         val noise = Noise.real(samples)
+        val dst = FloatArray(samples + 2)
 
         val fft: FloatArray = noise.fft(src, dst)
 
@@ -19,11 +24,11 @@ class Solver {
 
         var greatest: Int = 0
         for (i in pairs.indices) {
-            if (pairs[i].first > pairs[greatest].first) {
+            if (pairs[i].first > pairs[greatest].first && indexToFreq(rate, samples, i) < 900) {
                 greatest = i
             }
         }
 
-        return (rate * (greatest + 1) / samples)
+        return indexToFreq(rate, samples, greatest)
     }
 }
