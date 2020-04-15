@@ -1,30 +1,21 @@
 package com.example.implementation
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.media.MediaRecorder.AudioSource.MIC
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Button
+import android.widget.Switch
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.paramsen.noise.Noise
 import org.jetbrains.anko.doAsync
-import java.util.*
-import java.util.jar.Manifest
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.collections.first as first
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "RecordPerm"
@@ -37,8 +28,12 @@ class MainActivity : AppCompatActivity() {
 
         setupPermissions()
 
-        val test = findViewById<TextView>(R.id.hello)
-        test.text = getString(R.string.hello)
+        val status = findViewById<TextView>(R.id.status)
+        status.text = getString(R.string.ready)
+
+        val switch = findViewById<Switch>(R.id.switch1)
+        switch.isChecked = false
+
         val startButton = findViewById<Button>(R.id.connect)
         val stopButton = findViewById<Button>(R.id.disconnect)
 
@@ -51,7 +46,9 @@ class MainActivity : AppCompatActivity() {
         var active = false
         startButton.setOnClickListener {
             doAsync {
-                if (!active) {
+                if (!switch.isChecked) {
+                    active = true
+                    runOnUiThread { switch.isChecked=true }
                     val s = Solver()
                     val mic = AudioRecord(
                         MediaRecorder.AudioSource.MIC,
@@ -63,27 +60,32 @@ class MainActivity : AppCompatActivity() {
                     val src = FloatArray(samples)
                     mic.startRecording()
 
-                    for (i in 0 until 60) {
-                        active = true
+                    while(switch.isChecked) {
+
                         mic.read(src, 0, samples, AudioRecord.READ_BLOCKING)
                         val foundFreq = s.solve(samples, rate, src)
                         if (foundFreq > 400 - range && foundFreq < 400 + range) {
-                            runOnUiThread { test.text = getString(R.string.freq400) }
+                            runOnUiThread { status.text = getString(R.string.freq400) }
                         } else if (foundFreq > 600 - range && foundFreq < 600 + range) {
-                            runOnUiThread { test.text = getString(R.string.freq600) }
+                            runOnUiThread { status.text = getString(R.string.freq600) }
                         } else if (foundFreq > 800 - range && foundFreq < 800 + range) {
-                            runOnUiThread { test.text = getString(R.string.freq800) }
+                            runOnUiThread { status.text = getString(R.string.freq800) }
                         } else {
-                            runOnUiThread { test.text = getString(R.string.freqnone) }
+                            runOnUiThread { status.text = getString(R.string.freqnone) }
                         }
 
                     }
                     active = false
+                    runOnUiThread { switch.isChecked=false }
                     //test.text = s.solve(samples, rate, src).toString()
-
+                    runOnUiThread { status.text = getString(R.string.ready) }
                     mic.release()
                 }
             }
+        }
+
+        stopButton.setOnClickListener{
+            switch.isChecked=false
         }
 
         /*val src = FloatArray(samples)
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         test.text = (rate * (greatest + 1) / samples).toString()*/
-        test.text = "Ready!"
+        status.text = "Ready!"
     }
 
 
