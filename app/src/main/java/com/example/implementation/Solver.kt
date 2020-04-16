@@ -1,13 +1,14 @@
 package com.example.implementation
 
 import com.paramsen.noise.Noise
+import kotlin.math.abs
 
 class Solver {
     fun indexToFreq(rate: Int, samples: Int, index: Int): Float {
         return rate * (index + 1) / samples.toFloat()
     }
 
-    fun solve(samples: Int, rate: Int, src: FloatArray): Float {
+    fun solve(samples: Int, rate: Int, src: FloatArray): Pair<Float, Float> {
         val noise = Noise.real(samples)
         val dst = FloatArray(samples + 2)
 
@@ -23,12 +24,19 @@ class Solver {
         }
 
         var greatest: Int = 0
+        var sum = 0f
         for (i in pairs.indices) {
             if (pairs[i].first > pairs[greatest].first && indexToFreq(rate, samples, i) < 900) {
                 greatest = i
             }
         }
 
-        return indexToFreq(rate, samples, greatest)
+        for (i in src) {
+            sum += abs(i)
+        }
+
+
+
+        return indexToFreq(rate, samples, greatest) to sum / src.size
     }
 }

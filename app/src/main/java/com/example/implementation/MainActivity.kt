@@ -8,14 +8,14 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.paramsen.noise.Noise
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
+import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "RecordPerm"
@@ -34,21 +34,23 @@ class MainActivity : AppCompatActivity() {
         val switch = findViewById<Switch>(R.id.switch1)
         switch.isChecked = false
 
+        val volume = findViewById<TextView>(R.id.volume)
+        volume.text = getString(R.string.volume)
+
+        val volumeBar = findViewById<ProgressBar>(R.id.volumeBar)
+        volumeBar.progress = 0
+
         val startButton = findViewById<Button>(R.id.connect)
         val stopButton = findViewById<Button>(R.id.disconnect)
 
-        val freq = 80
         val rate = 44100
         val samples = 44100
         val range = 25
-        val noise = Noise.real(samples)
 
-        var active = false
         startButton.setOnClickListener {
             doAsync {
                 if (!switch.isChecked) {
-                    active = true
-                    runOnUiThread { switch.isChecked=true }
+                    runOnUiThread { switch.isChecked = true }
                     val s = Solver()
                     val mic = AudioRecord(
                         MediaRecorder.AudioSource.MIC,
@@ -57,13 +59,16 @@ class MainActivity : AppCompatActivity() {
                         AudioFormat.ENCODING_PCM_FLOAT,
                         samples * 4
                     )
+                    Thread.sleep(500)
                     val src = FloatArray(samples)
                     mic.startRecording()
 
-                    while(switch.isChecked) {
+                    while (switch.isChecked) {
 
                         mic.read(src, 0, samples, AudioRecord.READ_BLOCKING)
-                        val foundFreq = s.solve(samples, rate, src)
+                        val found = s.solve(samples, rate, src)
+                        val foundFreq = found.first
+                        val foundVol = sqrt(found.second * propBar.progress * 100)
                         if (foundFreq > 400 - range && foundFreq < 400 + range) {
                             runOnUiThread { status.text = getString(R.string.freq400) }
                         } else if (foundFreq > 600 - range && foundFreq < 600 + range) {
@@ -71,12 +76,30 @@ class MainActivity : AppCompatActivity() {
                         } else if (foundFreq > 800 - range && foundFreq < 800 + range) {
                             runOnUiThread { status.text = getString(R.string.freq800) }
                         } else {
-                            runOnUiThread { status.text = getString(R.string.freqnone) }
+                            runOnUiThread {
+                                status.text = getString(R.string.freqnone)
+                                volume.text = getString(R.string.volume)
+                                volumeBar.progress = 0
+                            }
+                            continue
+                        }
+
+                        runOnUiThread {
+                            volumeBar.progress = (foundVol).toInt()
+                            val volString: String = when {
+                                foundVol < 37.5 -> "1"
+                                foundVol < 62.5 -> "2"
+                                else -> "3"
+                            }
+                            volume.text = volString
                         }
 
                     }
-                    active = false
-                    runOnUiThread { switch.isChecked=false }
+                    runOnUiThread {
+                        switch.isChecked = false
+                        volume.text = getString(R.string.volume)
+                        volumeBar.progress = 0
+                    }
                     //test.text = s.solve(samples, rate, src).toString()
                     runOnUiThread { status.text = getString(R.string.ready) }
                     mic.release()
@@ -84,37 +107,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        stopButton.setOnClickListener{
-            switch.isChecked=false
+        stopButton.setOnClickListener {
+            switch.isChecked = false
         }
-
-        /*val src = FloatArray(samples)
-        val dst = FloatArray(samples + 2)
-
-
-        for (i in src.indices) {
-            src[i] = cos(2 * Math.PI * i * freq / rate).toFloat()
-        }
-
-        val fft: FloatArray = noise.fft(src, dst)
-
-        val pairs: MutableList<Pair<Float, Float>> = mutableListOf()
-
-        for (i in 2 until fft.size step 2) {
-            val real = fft[i]
-            val imag = fft[i + 1]
-
-            pairs.add(Pair(real, imag))
-        }
-
-        var greatest: Int = 0
-        for (i in pairs.indices) {
-            if (pairs[i].first > pairs[greatest].first) {
-                greatest = i
-            }
-        }
-
-        test.text = (rate * (greatest + 1) / samples).toString()*/
+        
         status.text = "Ready!"
     }
 

@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">implementation</string>
     <string name="connect">Start</string>
+    <string name="volume">Volume</string>
     <string name="disconnect">Stop</string>
     <string name="ready">Ready</string>
+    <string name="ready2">Ready</string>
     <string name="freq400">Frequency 400 Found</string>
     <string name="freq600">Frequency 600 Found</string>
     <string name="freq800">Frequency 800 Found</string>
     <string name="freqnone">Searching for frequency</string>
+    <string name="help">Adjust this bar to match bottom bar to 100% at full volume</string>
 </resources>
