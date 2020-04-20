@@ -4,7 +4,7 @@ import com.paramsen.noise.Noise
 import kotlin.math.abs
 
 class Solver {
-    fun indexToFreq(rate: Int, samples: Int, index: Int): Float {
+    private fun indexToFreq(rate: Int, samples: Int, index: Int): Float {
         return rate * (index + 1) / samples.toFloat()
     }
 

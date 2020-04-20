@@ -93,7 +93,6 @@ class MainActivity : AppCompatActivity() {
                             }
                             volume.text = volString
                         }
-
                     }
                     runOnUiThread {
                         switch.isChecked = false
