@@ -68,11 +68,13 @@ class MainActivity : AppCompatActivity() {
                         mic.read(src, 0, samples, AudioRecord.READ_BLOCKING)
                         val found = s.solve(samples, rate, src)
                         val foundFreq = found.first
-                        val foundVol = sqrt(found.second * propBar.progress * 100)
+                        var foundVol = sqrt(found.second * propBar.progress * 100)
                         if (foundFreq > 400 - range && foundFreq < 400 + range) {
                             runOnUiThread { status.text = getString(R.string.freq400) }
+                            foundVol *= 1/0.75f
                         } else if (foundFreq > 600 - range && foundFreq < 600 + range) {
                             runOnUiThread { status.text = getString(R.string.freq600) }
+                            foundVol *= 1/0.93f
                         } else if (foundFreq > 800 - range && foundFreq < 800 + range) {
                             runOnUiThread { status.text = getString(R.string.freq800) }
                         } else {
